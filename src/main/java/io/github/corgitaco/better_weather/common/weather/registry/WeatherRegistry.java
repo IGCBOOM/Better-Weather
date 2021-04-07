@@ -1,10 +1,11 @@
 package io.github.corgitaco.better_weather.common.weather.registry;
 
-import com.google.common.collect.Lists;
 import io.github.corgitaco.better_weather.common.BetterWeather;
 import io.github.corgitaco.better_weather.common.weather.Weather;
 import net.minecraft.resources.ResourceLocation;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 public final class WeatherRegistry<L extends ResourceLocation, W extends Weather> {
@@ -12,11 +13,14 @@ public final class WeatherRegistry<L extends ResourceLocation, W extends Weather
 
     private final WeatherRegistryStorage<L, W> storage = new WeatherRegistryStorage<>();
 
-    private final Queue<Task<WeatherRegistryStorage<L, W>>> tasks = Lists.newLinkedList();
+    private final Queue<Task<WeatherRegistryStorage<L, W>>> tasks = new LinkedList<>();
 
     private WeatherRegistry() {
     }
 
+    /**
+     * Should not be called outside of {@link io.github.corgitaco.better_weather.common.mixin.MixinMinecraft#run(CallbackInfo)}
+     */
     public void build() {
         long stamp = System.currentTimeMillis();
 
@@ -26,9 +30,8 @@ public final class WeatherRegistry<L extends ResourceLocation, W extends Weather
         BetterWeather.LOGGER.info("Registration took {} ms", System.currentTimeMillis() - stamp);
     }
 
-    public WeatherRegistry<L, W> task(Task<WeatherRegistryStorage<L, W>> task) {
+    public void task(Task<WeatherRegistryStorage<L, W>> task) {
         tasks.offer(task);
-        return this;
     }
 
     @FunctionalInterface

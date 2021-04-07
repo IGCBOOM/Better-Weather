@@ -22,7 +22,7 @@ public class BetterWeather implements ModInitializer {
     public void onInitialize() {
         WeatherRegistry.INSTANCE.task(storage -> {
             RAIN = storage.register(new ResourceLocation("rain"), new RainWeather());
-        }).build();
+        });
     }
 
     public static ResourceLocation createLocation(String path) {
