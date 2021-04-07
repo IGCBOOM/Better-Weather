@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "better_weather",
+  "version": "${version}",
+
+  "name": "Better Weather",
+  "description": "-",
+  "authors": [
+    "Corgi Taco"
+  ],
+  "contact": {
+    "homepage": "https://github.com/CorgiTaco/Better-Weather/tree/fabric-rewrite",
+    "sources": "https://github.com/CorgiTaco/Better-Weather/tree/fabric-rewrite"
+  },
+
+  "license": "GPU-L",
+  "icon": "assets/better_weather/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main":   [ "io.github.corgitaco.better_weather.common.BetterWeather" ],
+    "client": [ "io.github.corgitaco.better_weather.client.BetterWeatherClient" ]
+  },
+  "mixins": [ "better_weather.mixins.json"  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  }
+}
