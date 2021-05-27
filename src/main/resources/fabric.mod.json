@@ -1,27 +1,30 @@
 {
   "schemaVersion": 1,
-  "id": "better_weather",
+  "id": "betterweather",
   "version": "${version}",
 
   "name": "Better Weather",
-  "description": "-",
+  "description": "Adds Weather Enhancements in the form of Seasons and new Weather events!",
   "authors": [
-    "Corgi Taco"
+    "CorgiTaco"
   ],
   "contact": {
     "homepage": "https://github.com/CorgiTaco/Better-Weather/tree/fabric-rewrite",
-    "sources": "https://github.com/CorgiTaco/Better-Weather/tree/fabric-rewrite"
+    "sources":  "https://github.com/CorgiTaco/Better-Weather/tree/fabric-rewrite",
+    "issues":   "https://github.com/CorgiTaco/Better-Weather/tree/fabric-rewrite/issues"
   },
 
-  "license": "GPU-L",
-  "icon": "assets/better_weather/icon.png",
+  "license": "GNU Lesser GPL",
+  "icon": "assets/betterweather/icon.png",
 
   "environment": "*",
   "entrypoints": {
-    "main":   [ "io.github.corgitaco.better_weather.common.BetterWeather" ],
-    "client": [ "io.github.corgitaco.better_weather.client.BetterWeatherClient" ]
+    "main":   [ "com.github.corgitaco.betterweather.common.BetterWeather" ],
+    "client": [ "com.github.corgitaco.betterweather.client.BetterWeatherClient" ]
   },
-  "mixins": [ "better_weather.mixins.json"  ],
+  "mixins": [
+    "betterweather.mixins.json"
+  ],
 
   "depends": {
     "fabricloader": ">=0.7.4",
