@@ -39,7 +39,7 @@ public class MixinVertexBuffer implements VertexArrayObject {
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;unbindBuffer()V", shift = At.Shift.AFTER), method = "uploadRaw")
-    public void bindVboToVaoUnbound(BufferBuilder bufferIn, CallbackInfo ci) {
+    public void bindVboToVaoUnbind(BufferBuilder bufferIn, CallbackInfo ci) {
         VertexArrayObject.unbindVao();
     }
 
@@ -49,7 +49,7 @@ public class MixinVertexBuffer implements VertexArrayObject {
             int i = vertexFormat.getSize();
 
             glVertexAttribPointer(0, 3, GL_FLOAT, false, i, 0);
-            glVertexAttribPointer(1, 4, GL_FLOAT, false, i, 3 * 4);
+            glVertexAttribPointer(1, 4, GL_FLOAT, false, i, i + (4 * 4));
         }
     }
 

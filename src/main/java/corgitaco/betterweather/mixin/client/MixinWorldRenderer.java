@@ -90,6 +90,8 @@ public abstract class MixinWorldRenderer implements DestroyableGarbage {
         }
     }
 
+    // text break
+
     @Inject(at = @At("HEAD"), method = "renderBlockLayer")
     public void bindChunkArtist(RenderType blockLayerIn, MatrixStack matrixStackIn, double xIn, double yIn, double zIn, CallbackInfo ci) {
         chunkArtist.bind();
@@ -101,12 +103,16 @@ public abstract class MixinWorldRenderer implements DestroyableGarbage {
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;bindBuffer()V"), method = "renderBlockLayer")
-    public void disableBind(VertexBuffer vertexBuffer) {
+    public void replaceBind(VertexBuffer vertexBuffer) {
         ((VertexArrayObject) vertexBuffer).bindVao();
+
+        vertexBuffer.bindBuffer();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;unbindBuffer()V"), method = "renderBlockLayer")
-    public void disableUnbind() {
+    public void replaceUnbind() {
+        VertexBuffer.unbindBuffer();
+
         VertexArrayObject.unbindVao();
     }
 
