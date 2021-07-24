@@ -1,10 +1,7 @@
 package corgitaco.betterweather.weather.event.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import corgitaco.betterweather.BetterWeather;
 import corgitaco.betterweather.api.client.WeatherEventClient;
-import corgitaco.betterweather.api.client.graphics.Graphics;
-import corgitaco.betterweather.api.client.graphics.opengl.program.ShaderProgramBuilder;
 import corgitaco.betterweather.api.weather.WeatherEventAudio;
 import corgitaco.betterweather.weather.event.client.settings.BlizzardClientSettings;
 import net.minecraft.client.Minecraft;
@@ -14,22 +11,15 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.Heightmap;
 
-import java.io.IOException;
 import java.util.Random;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 
 public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> implements WeatherEventAudio {
     private final float[] rainSizeX = new float[1024];
@@ -38,10 +28,6 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
     private final SoundEvent audio;
     private final float audioVolume;
     private final float audioPitch;
-
-    private final Consumer<ShaderProgramBuilder> builder;
-
-    private final Matrix4f modelMatrix = new Matrix4f();
 
     public BlizzardClient(BlizzardClientSettings clientSettings) {
         super(clientSettings);
@@ -59,25 +45,6 @@ public class BlizzardClient extends WeatherEventClient<BlizzardClientSettings> i
                 this.rainSizeZ[i << 5 | j] = f / f2;
             }
         }
-
-        builder = builder1 -> {
-            IResourceManager manager = Minecraft.getInstance().getResourceManager();
-
-            try {
-                builder1
-                        .compile(GL_FRAGMENT_SHADER, manager.getResource(new ResourceLocation("betterweather", "shaders/fragment.glsl")))
-                        .compile(GL_VERTEX_SHADER, manager.getResource(new ResourceLocation("betterweather", "shaders/vertex.glsl")));
-            } catch (IOException e) {
-                BetterWeather.LOGGER.error(e);
-
-                builder1.clean();
-            }
-        };
-    }
-
-    @Override
-    public boolean renderWeatherShaders(Graphics graphics, ClientWorld world, double x, double y, double z) {
-        return true;
     }
 
     @Override

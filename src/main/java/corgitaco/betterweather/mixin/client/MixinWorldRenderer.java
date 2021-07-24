@@ -1,19 +1,22 @@
 package corgitaco.betterweather.mixin.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import corgitaco.betterweather.api.client.ColorSettings;
-import corgitaco.betterweather.api.client.graphics.Graphics;
+import corgitaco.betterweather.api.client.opengl.ChunkArtist;
+import corgitaco.betterweather.api.client.opengl.Destroyable;
+import corgitaco.betterweather.api.client.opengl.DestroyableGarbage;
+import corgitaco.betterweather.api.client.opengl.VertexArrayObject;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.mixin.access.Vector3dAccess;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,21 +25,26 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Stack;
+
+import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+
 @Mixin(WorldRenderer.class)
-public abstract class MixinWorldRenderer implements Graphics {
-    @Shadow
-    private int ticks;
-    @Shadow
-    @Final
-    private Minecraft mc;
-    @Shadow
-    private ClientWorld world;
+public abstract class MixinWorldRenderer implements DestroyableGarbage {
+    private final Stack<Destroyable> destroyableGarbage = new Stack<>();
+
+    private final ChunkArtist chunkArtist = push(new ChunkArtist());
+
+    @Shadow private int ticks;
+    @Shadow @Final private Minecraft mc;
+    @Shadow private ClientWorld world;
 
     @Inject(at = @At("HEAD"), method = "renderRainSnow(Lnet/minecraft/client/renderer/LightTexture;FDDD)V", cancellable = true)
     private void renderWeather(LightTexture lightmapIn, float partialTicks, double x, double y, double z, CallbackInfo ci) {
         BWWeatherEventContext weatherEventContext = ((BetterWeatherWorldData) this.world).getWeatherEventContext();
         if (weatherEventContext != null) {
-            if (weatherEventContext.getCurrentClientEvent().renderWeather((Graphics) (WorldRenderer) (Object) this, mc, this.world, lightmapIn, ticks, partialTicks, x, y, z, weatherEventContext.getCurrentEvent()::isValidBiome)) {
+            if (weatherEventContext.getCurrentClientEvent().renderWeather(mc, this.world, lightmapIn, ticks, partialTicks, x, y, z, weatherEventContext.getCurrentEvent()::isValidBiome)) {
                 ci.cancel();
             }
         }
@@ -82,6 +90,48 @@ public abstract class MixinWorldRenderer implements Graphics {
             ((Vector3dAccess) cloudsColor).setX(MathHelper.lerp(blend, cloudsColor.x, r));
             ((Vector3dAccess) cloudsColor).setY(MathHelper.lerp(blend, cloudsColor.y, g));
             ((Vector3dAccess) cloudsColor).setZ(MathHelper.lerp(blend, cloudsColor.z, b));
+        }
+    }
+
+    @Inject(at = @At("HEAD"), method = "renderBlockLayer")
+    public void bindChunkArtist(RenderType blockLayerIn, MatrixStack matrixStackIn, double xIn, double yIn, double zIn, CallbackInfo ci) {
+        chunkArtist.bind();
+    }
+
+    @Inject(at = @At("RETURN"), method = "renderBlockLayer")
+    public void unbindChunkArtist(RenderType blockLayerIn, MatrixStack matrixStackIn, double xIn, double yIn, double zIn, CallbackInfo ci) {
+        chunkArtist.unbind();
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;bindBuffer()V"), method = "renderBlockLayer")
+    public void disableBind(VertexBuffer vertexBuffer) {
+        ((VertexArrayObject) vertexBuffer).bindVao();
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;unbindBuffer()V"), method = "renderBlockLayer")
+    public void disableUnbind() {
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        VertexArrayObject.unbindVao();
+    }
+
+    @Override
+    public <T extends Destroyable> T push(T destroyable) {
+        destroyableGarbage.push(destroyable);
+        return destroyable;
+    }
+
+    @Override
+    public @NotNull ChunkArtist getChunkArtist() {
+        return chunkArtist;
+    }
+
+    @Inject(at = @At("INVOKE"), method = "close")
+    public void close(CallbackInfo ci) {
+        while (!destroyableGarbage.isEmpty()) {
+            destroyableGarbage.pop().destroy();
         }
     }
 }

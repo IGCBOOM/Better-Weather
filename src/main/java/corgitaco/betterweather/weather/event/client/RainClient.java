@@ -1,7 +1,6 @@
 package corgitaco.betterweather.weather.event.client;
 
 import corgitaco.betterweather.api.client.WeatherEventClient;
-import corgitaco.betterweather.api.client.graphics.Graphics;
 import corgitaco.betterweather.weather.event.client.settings.RainClientSettings;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -51,11 +50,6 @@ public class RainClient extends WeatherEventClient<RainClientSettings> {
                 this.rainSizeZ[i << 5 | j] = f / f2;
             }
         }
-    }
-
-    @Override
-    public boolean renderWeatherShaders(Graphics graphics, ClientWorld world, double x, double y, double z) {
-        return false;
     }
 
     @Override

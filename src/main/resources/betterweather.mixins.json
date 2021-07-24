@@ -39,7 +39,8 @@
     "client.MixinFogRenderer",
     "client.MixinItemStack",
     "client.MixinWorldRenderer",
-    "client.block.MixinLeavesBlock"
+    "client.block.MixinLeavesBlock",
+    "client.MixinVertexBuffer"
   ],
   "injectors": {
     "defaultRequire": 1
