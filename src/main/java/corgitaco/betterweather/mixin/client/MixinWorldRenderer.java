@@ -27,9 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Stack;
 
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer implements DestroyableGarbage {
     private final Stack<Destroyable> destroyableGarbage = new Stack<>();
@@ -106,14 +103,10 @@ public abstract class MixinWorldRenderer implements DestroyableGarbage {
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;bindBuffer()V"), method = "renderBlockLayer")
     public void disableBind(VertexBuffer vertexBuffer) {
         ((VertexArrayObject) vertexBuffer).bindVao();
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;unbindBuffer()V"), method = "renderBlockLayer")
     public void disableUnbind() {
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
         VertexArrayObject.unbindVao();
     }
 
@@ -128,7 +121,7 @@ public abstract class MixinWorldRenderer implements DestroyableGarbage {
         return chunkArtist;
     }
 
-    @Inject(at = @At("INVOKE"), method = "close")
+    @Inject(at = @At("RETURN"), method = "close")
     public void close(CallbackInfo ci) {
         while (!destroyableGarbage.isEmpty()) {
             destroyableGarbage.pop().destroy();

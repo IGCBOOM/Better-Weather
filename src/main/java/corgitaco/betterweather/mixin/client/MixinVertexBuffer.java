@@ -26,18 +26,19 @@ import static org.lwjgl.opengl.GL30.*;
 @OnlyIn(Dist.CLIENT)
 @Mixin(VertexBuffer.class)
 public class MixinVertexBuffer implements VertexArrayObject {
+    private static final Predicate<VertexFormat> IS_USED_WITH_CHUNKS = vertexFormat -> vertexFormat == DefaultVertexFormats.BLOCK;
+
     private final int vao = glGenVertexArrays();
 
     @Shadow @Final private VertexFormat vertexFormat;
     @Shadow private int count;
-    private static final Predicate<VertexFormat> IS_USED_WITH_CHUNKS = vertexFormat -> vertexFormat == DefaultVertexFormats.BLOCK;
 
-    @Inject(at = @At("HEAD"), method = "uploadRaw")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;bindBuffer()V", shift = At.Shift.BEFORE), method = "uploadRaw")
     public void bindVboToVaoBind(BufferBuilder bufferIn, CallbackInfo ci) {
         bindVao();
     }
 
-    @Inject(at = @At("RETURN"), method = "uploadRaw")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;unbindBuffer()V", shift = At.Shift.AFTER), method = "uploadRaw")
     public void bindVboToVaoUnbound(BufferBuilder bufferIn, CallbackInfo ci) {
         VertexArrayObject.unbindVao();
     }
@@ -48,7 +49,7 @@ public class MixinVertexBuffer implements VertexArrayObject {
             int i = vertexFormat.getSize();
 
             glVertexAttribPointer(0, 3, GL_FLOAT, false, i, 0);
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, i, 3 * 4);
+            glVertexAttribPointer(1, 4, GL_FLOAT, false, i, 3 * 4);
         }
     }
 

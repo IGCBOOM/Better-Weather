@@ -51,7 +51,13 @@ public class ChunkArtist implements Destroyable {
         RenderSystem.loadIdentity();
         RenderSystem.multMatrix(matrix4f);
 
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+
         glDrawArrays(GL_QUADS, 0, vertexCount);
+
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
 
         RenderSystem.popMatrix();
     }

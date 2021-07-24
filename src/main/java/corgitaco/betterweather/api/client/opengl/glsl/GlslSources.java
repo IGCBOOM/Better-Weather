@@ -23,7 +23,7 @@ import static org.lwjgl.opengl.GL20.*;
 
 @OnlyIn(Dist.CLIENT)
 public final class GlslSources implements Destroyable {
-    private final IntSet shaders = new IntOpenHashSet();
+    private final IntSet shaders = new IntOpenHashSet(2);
 
     public void compile(int type, ResourceLocation location) throws IOException {
         int shader = glCreateShader(type);
