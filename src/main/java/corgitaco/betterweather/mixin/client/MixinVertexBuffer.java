@@ -49,8 +49,13 @@ public class MixinVertexBuffer implements VertexArrayObject {
             int i = vertexFormat.getSize();
 
             glVertexAttribPointer(0, 3, GL_FLOAT, false, i, 0);
-            glVertexAttribPointer(1, 4, GL_FLOAT, false, i, i + (4 * 4));
+            glVertexAttribPointer(1, 4, GL_FLOAT, false, i, 3 * 4);
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, i, (3 + 4) * 4);
         }
+    }
+
+    private static int offset(int i, int bytes) {
+        return bytes;
     }
 
     @Inject(at = @At("INVOKE"), method = "draw", cancellable = true)
