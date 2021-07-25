@@ -49,7 +49,7 @@ public class MixinVertexBuffer implements VertexArrayObject {
             int size = vertexFormat.getSize();
 
             glVertexAttribPointer(0, 3, GL_FLOAT, false, size, 0);
-            glVertexAttribPointer(1, 4, GL_FLOAT, false, size, vertexFormat.getOffset(1));
+            glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, true, size, vertexFormat.getOffset(1));
             glVertexAttribPointer(2, 2, GL_FLOAT, false, size, vertexFormat.getOffset(2));
         }
     }
