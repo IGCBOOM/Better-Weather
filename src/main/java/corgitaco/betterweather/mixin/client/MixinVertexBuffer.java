@@ -46,11 +46,11 @@ public class MixinVertexBuffer implements VertexArrayObject {
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;glBufferData(ILjava/nio/ByteBuffer;I)V", shift = At.Shift.AFTER), method = "uploadRaw")
     public void uploadRaw(BufferBuilder bufferIn, CallbackInfo ci) {
         if (IS_USED_WITH_CHUNKS.test(vertexFormat)) {
-            int i = vertexFormat.getSize();
+            int size = vertexFormat.getSize();
 
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, i, 0);
-            glVertexAttribPointer(1, 4, GL_FLOAT, false, i, 3 * 4);
-            glVertexAttribPointer(2, 2, GL_FLOAT, false, i, (3 + 4) * 4);
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, size, 0);
+            glVertexAttribPointer(1, 4, GL_FLOAT, false, size, vertexFormat.getOffset(1));
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, size, vertexFormat.getOffset(2));
         }
     }
 

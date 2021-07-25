@@ -44,6 +44,10 @@ public class GlslProgram implements Destroyable {
         }
     }
 
+    public void upload1i(String location, int i) {
+        glUniform1i(compute(location), i);
+    }
+
     public void uploadMatrix4f(String location, Matrix4f matrix4f) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(16);
