@@ -5,9 +5,6 @@ import corgitaco.betterweather.api.client.opengl.glsl.GlslProgram;
 import corgitaco.betterweather.api.client.opengl.glsl.LazyGlslProgram;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.texture.AtlasTexture;
-import net.minecraft.client.renderer.texture.Texture;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraftforge.api.distmarker.Dist;
@@ -45,14 +42,6 @@ public class ChunkArtist implements Destroyable {
 
     @SuppressWarnings("deprecation")
     public void draw(Matrix4f matrix4f, int vertexCount) {
-        Minecraft minecraft = Minecraft.getInstance();
-        TextureManager manager = minecraft.textureManager;
-
-        Texture texture = manager.getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.getGlTextureId());
-
         GlslProgram program = lazy.get();
 
         program.upload1i("textureSampler", 0);
@@ -77,8 +66,6 @@ public class ChunkArtist implements Destroyable {
         glDisableVertexAttribArray(2);
 
         RenderSystem.popMatrix();
-
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     @Override
