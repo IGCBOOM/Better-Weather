@@ -5,6 +5,7 @@ import corgitaco.betterweather.api.client.opengl.Destroyable;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +47,10 @@ public class GlslProgram implements Destroyable {
 
     public void upload1i(String location, int i) {
         glUniform1i(compute(location), i);
+    }
+
+    public void upload4f(String location, float x, float y, float z, float w) {
+        glUniform4f(compute(location), x, y, z, w);
     }
 
     public void uploadMatrix4f(String location, Matrix4f matrix4f) {

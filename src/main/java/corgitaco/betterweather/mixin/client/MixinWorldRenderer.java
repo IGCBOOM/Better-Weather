@@ -9,8 +9,10 @@ import corgitaco.betterweather.api.client.opengl.VertexArrayObject;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.mixin.access.Vector3dAccess;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
+import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
@@ -21,11 +23,16 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Stack;
+
+import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer implements DestroyableGarbage {
@@ -102,15 +109,32 @@ public abstract class MixinWorldRenderer implements DestroyableGarbage {
         chunkArtist.unbind();
     }
 
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;bindBuffer()V", shift = At.Shift.BEFORE), method = "renderBlockLayer", locals = LocalCapture.CAPTURE_FAILHARD)
+    public void pushChunkPos(RenderType blockLayerIn, MatrixStack matrixStackIn, double xIn, double yIn, double zIn, CallbackInfo ci, boolean flag, ObjectListIterator objectlistiterator, @Coerce Object worldrenderer$localrenderinformationcontainer1, ChunkRenderDispatcher.ChunkRender chunkrenderdispatcher$chunkrender, VertexBuffer vertexbuffer, BlockPos blockpos) {
+        getChunkArtist().push(blockpos);
+    }
+
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;bindBuffer()V"), method = "renderBlockLayer")
     public void replaceBind(VertexBuffer vertexBuffer) {
         ((VertexArrayObject) vertexBuffer).bindVao();
 
         vertexBuffer.bindBuffer();
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;unbindBuffer()V"), method = "renderBlockLayer")
     public void replaceUnbind() {
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+        glDisableVertexAttribArray(3);
+        glDisableVertexAttribArray(4);
+
         VertexBuffer.unbindBuffer();
 
         VertexArrayObject.unbindVao();
