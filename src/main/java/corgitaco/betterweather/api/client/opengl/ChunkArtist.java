@@ -3,8 +3,13 @@ package corgitaco.betterweather.api.client.opengl;
 import com.mojang.blaze3d.systems.RenderSystem;
 import corgitaco.betterweather.api.client.opengl.glsl.GlslProgram;
 import corgitaco.betterweather.api.client.opengl.glsl.LazyGlslProgram;
+import corgitaco.betterweather.helpers.BetterWeatherWorldData;
+import corgitaco.betterweather.season.BWSubseasonSettings;
+import corgitaco.betterweather.season.SeasonContext;
+import corgitaco.betterweather.util.client.ColorUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -31,14 +36,12 @@ public class ChunkArtist implements Destroyable {
         Minecraft minecraft = Minecraft.getInstance();
         GameRenderer renderer = minecraft.gameRenderer;
 
-        float partialTicks = minecraft.getRenderPartialTicks();
-
         GlslProgram program = lazy.create();
 
         program.bind();
 
         projection.setIdentity();
-        projection.mul(renderer.getProjectionMatrix(renderer.getActiveRenderInfo(), partialTicks, true));
+        projection.mul(renderer.getProjectionMatrix(renderer.getActiveRenderInfo(), minecraft.getRenderPartialTicks(), true));
 
         program.uploadMatrix4f("projection", projection);
     }
@@ -49,6 +52,8 @@ public class ChunkArtist implements Destroyable {
 
     @SuppressWarnings("deprecation")
     public void draw(Matrix4f matrix4f, int vertexCount) {
+        BlockPos chunkPos = chunkPosStack.pop();
+
         GlslProgram program = lazy.get();
 
         getTint(program);
@@ -71,7 +76,32 @@ public class ChunkArtist implements Destroyable {
     }
 
     public void getTint(GlslProgram program) {
-        program.upload4f("rgba", 1.0F, 1.0F, 1.0F, 1.0F);
+        float[] rgb = {
+                1.0F,
+                1.0F,
+                1.0F
+        };
+
+        Minecraft minecraft = Minecraft.getInstance();
+
+        ClientWorld world = minecraft.world;
+        if (world == null) {
+            return;
+        }
+
+        SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
+
+        if (seasonContext != null) {
+            BWSubseasonSettings settings = seasonContext.getCurrentSubSeasonSettings();
+
+            int[] rgb3i = ColorUtil.unpack(settings.getClientSettings().getTargetGrassHexColor());
+
+            rgb[0] = (float) rgb3i[0] / 0xFF;
+            rgb[1] = (float) rgb3i[1] / 0xFF;
+            rgb[2] = (float) rgb3i[2] / 0xFF;
+        }
+
+        program.upload4f("rgba", rgb[0], rgb[1], rgb[2], 1.0F);
     }
 
     public void push(BlockPos pos) {

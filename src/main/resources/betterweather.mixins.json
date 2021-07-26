@@ -40,7 +40,8 @@
     "client.MixinItemStack",
     "client.MixinVertexBuffer",
     "client.MixinWorldRenderer",
-    "client.block.MixinLeavesBlock"
+    "client.block.MixinLeavesBlock",
+    "client.MixinGlDebugTextUtils"
   ],
   "injectors": {
     "defaultRequire": 1
