@@ -27,7 +27,7 @@ void main() {
 
             float gray = multipliedRed + multipliedGreen + multipliedBlue;
 
-            color = vec4(gray, gray, gray, color.w);
+            color = rgba * vec4(gray, gray, gray, color.w);
         }
     }
 

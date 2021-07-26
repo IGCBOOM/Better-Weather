@@ -1,12 +1,14 @@
 package corgitaco.betterweather.api.client.opengl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import corgitaco.betterweather.api.client.ColorSettings;
 import corgitaco.betterweather.api.client.opengl.glsl.GlslProgram;
 import corgitaco.betterweather.api.client.opengl.glsl.LazyGlslProgram;
 import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.season.BWSubseasonSettings;
 import corgitaco.betterweather.season.SeasonContext;
 import corgitaco.betterweather.util.client.ColorUtil;
+import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.world.ClientWorld;
@@ -75,7 +77,7 @@ public class ChunkArtist implements Destroyable {
         RenderSystem.popMatrix();
     }
 
-    public void getTint(GlslProgram program) {
+    private void getTint(GlslProgram program) {
         float[] rgb = {
                 1.0F,
                 1.0F,
@@ -85,23 +87,33 @@ public class ChunkArtist implements Destroyable {
         Minecraft minecraft = Minecraft.getInstance();
 
         ClientWorld world = minecraft.world;
-        if (world == null) {
-            return;
-        }
-
-        SeasonContext seasonContext = ((BetterWeatherWorldData) world).getSeasonContext();
-
-        if (seasonContext != null) {
-            BWSubseasonSettings settings = seasonContext.getCurrentSubSeasonSettings();
-
-            int[] rgb3i = ColorUtil.unpack(settings.getClientSettings().getTargetGrassHexColor());
-
-            rgb[0] = (float) rgb3i[0] / 0xFF;
-            rgb[1] = (float) rgb3i[1] / 0xFF;
-            rgb[2] = (float) rgb3i[2] / 0xFF;
+        if (world != null) {
+            getSeasonColor(rgb, world);
         }
 
         program.upload4f("rgba", rgb[0], rgb[1], rgb[2], 1.0F);
+    }
+
+    private void getSeasonColor(float[] rgb, ClientWorld clientWorld) {
+        BetterWeatherWorldData worldData = (BetterWeatherWorldData) clientWorld;
+
+        SeasonContext context = worldData.getSeasonContext();
+
+        if (context != null) {
+            BWSubseasonSettings subSeasonSettings = context.getCurrentSubSeasonSettings();
+
+            ColorSettings clientSettings = subSeasonSettings.getClientSettings();
+
+            int target = clientSettings.getTargetGrassHexColor();
+
+            if (target == Integer.MAX_VALUE) {
+                target = 0xFFFFFF;
+            }
+
+            rgb[0] = ((target >> 16) & 0xFF) / 255.0F;
+            rgb[1] = ((target >> 8) & 0xFF) / 255.0F;
+            rgb[2] = (target & 0xFF) / 255.0F;
+        }
     }
 
     public void push(BlockPos pos) {

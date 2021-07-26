@@ -12,16 +12,6 @@ import static corgitaco.betterweather.util.client.ColorUtil.getBiomeColor;
 @Mixin(Biome.class)
 public abstract class MixinBiomeClient {
 
-    @Inject(method = "getGrassColor", at = @At("RETURN"), cancellable = true)
-    private void getGrassColor(double posX, double posZ, CallbackInfoReturnable<Integer> info) {
-        info.setReturnValue(getBiomeColor((Biome) (Object) this, GRASS, info.getReturnValue()));
-    }
-
-    @Inject(method = "getFoliageColor", at = @At("RETURN"), cancellable = true)
-    private void getFoliageColor(CallbackInfoReturnable<Integer> info) {
-        info.setReturnValue(getBiomeColor((Biome) (Object) this, FOLIAGE, info.getReturnValue()));
-    }
-
     @Inject(method = "getSkyColor", at = @At("RETURN"), cancellable = true)
     private void getSkyColor(CallbackInfoReturnable<Integer> info) {
         info.setReturnValue(getBiomeColor((Biome) (Object) this, SKY, info.getReturnValue()));
