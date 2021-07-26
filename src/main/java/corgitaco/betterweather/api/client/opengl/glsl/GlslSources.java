@@ -10,11 +10,13 @@ import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.function.IntConsumer;
 import java.util.function.IntPredicate;
@@ -23,7 +25,7 @@ import static org.lwjgl.opengl.GL20.*;
 
 @OnlyIn(Dist.CLIENT)
 public final class GlslSources implements Destroyable {
-    private final IntSet shaders = new IntOpenHashSet(2);
+    private final IntSet shaders = new IntOpenHashSet(3);
 
     public void compile(int type, ResourceLocation location) throws IOException {
         int shader = glCreateShader(type);
@@ -34,10 +36,18 @@ public final class GlslSources implements Destroyable {
         if (glGetShaderi(shader, GL_COMPILE_STATUS) == GL_TRUE) {
             shaders.add(shader);
         } else {
-            String infoLog = glGetShaderInfoLog(shader);
-            glDeleteShader(shader);
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                IntBuffer lengthBuffer = stack.mallocInt(1);
+                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, lengthBuffer);
 
-            BetterWeather.LOGGER.error(infoLog);
+                int length = lengthBuffer.get();
+
+                String infoLog = glGetShaderInfoLog(shader, length);
+
+                glDeleteShader(shader);
+
+                BetterWeather.LOGGER.error(infoLog);
+            }
         }
     }
 

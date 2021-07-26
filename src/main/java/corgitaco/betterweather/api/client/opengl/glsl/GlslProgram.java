@@ -5,7 +5,6 @@ import corgitaco.betterweather.api.client.opengl.Destroyable;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +12,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.function.Supplier;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -28,13 +28,25 @@ public class GlslProgram implements Destroyable {
     private GlslProgram(GlslSources sources) {
         this.sources = sources;
 
-        Supplier<String> infoLog = () -> glGetProgramInfoLog(program);
+        Supplier<String> infoLog = () -> {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+
+                IntBuffer lengthBuffer = stack.mallocInt(1);
+                glGetProgramiv(program, GL_INFO_LOG_LENGTH, lengthBuffer);
+
+                int length = lengthBuffer.get();
+
+                return glGetProgramInfoLog(program, length);
+            }
+        };
 
         sources.attach(this);
 
         glLinkProgram(program);
         if (glGetProgrami(program, GL_LINK_STATUS) == GL_FALSE) {
             BetterWeather.LOGGER.error(infoLog.get());
+
+            destroy();
         }
 
         sources.detach(this);

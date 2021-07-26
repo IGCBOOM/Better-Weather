@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -118,13 +119,15 @@ public abstract class MixinWorldRenderer implements DestroyableGarbage {
     public void replaceBind(VertexBuffer vertexBuffer) {
         ((VertexArrayObject) vertexBuffer).bindVao();
 
-        vertexBuffer.bindBuffer();
-
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
         glEnableVertexAttribArray(3);
         glEnableVertexAttribArray(4);
+    }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexFormat;setupBufferState(J)V"), method = "renderBlockLayer")
+    public void disableBufferState(VertexFormat vertexFormat, long pointerIn) {
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/vertex/VertexBuffer;unbindBuffer()V"), method = "renderBlockLayer")
@@ -134,8 +137,6 @@ public abstract class MixinWorldRenderer implements DestroyableGarbage {
         glDisableVertexAttribArray(2);
         glDisableVertexAttribArray(3);
         glDisableVertexAttribArray(4);
-
-        VertexBuffer.unbindBuffer();
 
         VertexArrayObject.unbindVao();
     }
