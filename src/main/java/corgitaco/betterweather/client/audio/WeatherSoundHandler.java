@@ -7,7 +7,8 @@ import corgitaco.betterweather.helpers.BetterWeatherWorldData;
 import corgitaco.betterweather.weather.BWWeatherEventContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.IAmbientSoundHandler;
-import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.sounds.SoundEventListener;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.audio.TickableSound;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
@@ -25,15 +26,15 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WeatherSoundHandler implements IAmbientSoundHandler {
+public class WeatherSoundHandler implements SoundEventListener {
 
     private final ClientPlayerEntity player;
-    private final SoundHandler soundHandler;
+    private final SoundManager soundHandler;
     private final BiomeManager biomeManager;
     private final ClientWorld world;
     private WeatherSoundHandler.Sound currentSound;
 
-    public WeatherSoundHandler(ClientPlayerEntity player, SoundHandler soundHandler, BiomeManager biomeManager) {
+    public WeatherSoundHandler(ClientPlayerEntity player, SoundManager soundHandler, BiomeManager biomeManager) {
         this.player = player;
         this.soundHandler = soundHandler;
         this.biomeManager = biomeManager;
